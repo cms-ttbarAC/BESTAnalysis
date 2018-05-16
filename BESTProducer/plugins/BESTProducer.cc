@@ -473,9 +473,9 @@ void BESTProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
         treeVars["bDisc1"] = btagValue1;
         treeVars["bDisc2"] = btagValue2;
 
-        float tau3 = ijet->userFloat("NjettinessAK8:tau3");
-        float tau2 = ijet->userFloat("NjettinessAK8:tau2");
-        float tau1 = ijet->userFloat("NjettinessAK8:tau1");
+        float tau3 = ijet->userFloat("ak8PFJetsCHSValueMap:NjettinessAK8CHSTau3");
+        float tau2 = ijet->userFloat("ak8PFJetsCHSValueMap:NjettinessAK8CHSTau2");
+        float tau1 = ijet->userFloat("ak8PFJetsCHSValueMap:NjettinessAK8CHSTau1");
         float tau32 = tau3/tau2;
         float tau21 = tau2/tau1;
 
@@ -483,7 +483,7 @@ void BESTProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
         treeVars["et"]     = thisJet.Pt();
         treeVars["eta"]    = thisJet.Rapidity();
         treeVars["mass"]   = thisJet.M();
-        treeVars["SDmass"] = ijet->userFloat("ak8PFJetsCHSSoftDropMass");
+        treeVars["SDmass"] = ijet->userFloat("ak8PFJetsCHSValueMap:ak8PFJetsCHSSoftDropMass");
 
         treeVars["tau32"] = tau32;
         treeVars["tau21"] = tau21;
@@ -1088,7 +1088,7 @@ int BESTProducer::FWMoments( std::vector<TLorentzVector> particles, double (&out
     unsigned int numParticles = particles.size();
     float s(0.0);
 
-    for(int i = 0; i < numParticles; i++)
+    for(unsigned int i=0; i<numParticles; i++)
         s += particles[i].E();
 
     float H0(0.0);
@@ -1097,8 +1097,8 @@ int BESTProducer::FWMoments( std::vector<TLorentzVector> particles, double (&out
     float H2(0.0);
     float H1(0.0);
 
-    for (int i = 0; i < numParticles; i++){
-        for (int j = i; j < numParticles; j++){
+    for (unsigned int i=0; i<numParticles; i++){
+        for (unsigned int j=i; j<numParticles; j++){
             float costh = ( particles[i].Px() * particles[j].Px() + particles[i].Py() * particles[j].Py() + particles[i].Pz() * particles[j].Pz() ) / ( particles[i].P() * particles[j].P() );
             float w1 = particles[i].P();
             float w2 = particles[j].P();
@@ -1140,10 +1140,10 @@ void BESTProducer::pboost( TVector3 pbeam, TVector3 plab, TLorentzVector &pboo )
     pbx.SetX(pbeam.Y());
     pbx.SetY(pbeam.X());
     pbx.SetZ(0.0);
-    pbx /= pbx.Mag();
+    pbx *= 1./pbx.Mag();
 
     pby  = -pbx.Cross(pbeam);
-    pby /= pby.Mag();
+    pby *= 1./pby.Mag();
 
     pboo.SetX((plab.Dot(pbx)));
     pboo.SetY((plab.Dot(pby)));
