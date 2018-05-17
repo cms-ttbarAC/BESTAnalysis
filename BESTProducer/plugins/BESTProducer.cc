@@ -82,6 +82,7 @@ class BESTProducer : public edm::stream::EDProducer<> {
     int NNtargetX_;
     int NNtargetY_;
     int isMC_;
+    int m_year;
 
     float kappa_ = 0.6;        // jet charge pT-weight
     double AK4_radius_ = 0.4;  // AK4 jet radius
@@ -101,7 +102,8 @@ class BESTProducer : public edm::stream::EDProducer<> {
 BESTProducer::BESTProducer(const edm::ParameterSet& iConfig):
   NNtargetX_  (iConfig.getParameter<int>("NNtargetX")),
   NNtargetY_  (iConfig.getParameter<int>("NNtargetY")),
-  isMC_ (iConfig.getParameter<int>("isMC")){
+  isMC_ (iConfig.getParameter<int>("isMC")),
+  m_year(iConfig.getParameter<int>("year")){
     produces<std::vector<float > >("FWmoment0");
     produces<std::vector<float > >("FWmoment1");
     produces<std::vector<float > >("FWmoment2");
@@ -453,6 +455,9 @@ void BESTProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
         nAK4Jets++;
     }
     nAK4JetsV->push_back(nAK4Jets);
+    std::string userFloat_tau1 = (m_year==2016) ? "NjettinessAK8:tau1" : "ak8PFJetsCHSValueMap:NjettinessAK8CHSTau1";
+    std::string userFloat_tau2 = (m_year==2016) ? "NjettinessAK8:tau2" : "ak8PFJetsCHSValueMap:NjettinessAK8CHSTau2";
+    std::string userFloat_tau3 = (m_year==2016) ? "NjettinessAK8:tau3" : "ak8PFJetsCHSValueMap:NjettinessAK8CHSTau3";
 
     int nJets = 0;
     for (std::vector<pat::Jet>::const_iterator jetBegin = ak8Jets->begin(), jetEnd = ak8Jets->end(), ijet = jetBegin; ijet != jetEnd; ++ijet){
@@ -473,9 +478,9 @@ void BESTProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
         treeVars["bDisc1"] = btagValue1;
         treeVars["bDisc2"] = btagValue2;
 
-        float tau3 = ijet->userFloat("NjettinessAK8:tau3");
-        float tau2 = ijet->userFloat("NjettinessAK8:tau2");
-        float tau1 = ijet->userFloat("NjettinessAK8:tau1");
+        float tau3 = ijet->userFloat(userFloat_tau1);
+        float tau2 = ijet->userFloat(userFloat_tau2);
+        float tau1 = ijet->userFloat(userFloat_tau3);
         float tau32 = tau3/tau2;
         float tau21 = tau2/tau1;
 
@@ -483,7 +488,7 @@ void BESTProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
         treeVars["et"]     = thisJet.Pt();
         treeVars["eta"]    = thisJet.Rapidity();
         treeVars["mass"]   = thisJet.M();
-        treeVars["SDmass"] = ijet->userFloat("ak8PFJetsCHSSoftDropMass");
+        treeVars["SDmass"] = (m_year==2016) ? ijet->userFloat("ak8PFJetsCHSSoftDropMass") : ijet->userFloat("ak8PFJetsCHSValueMap:ak8PFJetsCHSSoftDropMass");
 
         treeVars["tau32"] = tau32;
         treeVars["tau21"] = tau21;
@@ -1088,7 +1093,7 @@ int BESTProducer::FWMoments( std::vector<TLorentzVector> particles, double (&out
     unsigned int numParticles = particles.size();
     float s(0.0);
 
-    for(int i = 0; i < numParticles; i++)
+    for(unsigned int i=0; i<numParticles; i++)
         s += particles[i].E();
 
     float H0(0.0);
@@ -1097,8 +1102,8 @@ int BESTProducer::FWMoments( std::vector<TLorentzVector> particles, double (&out
     float H2(0.0);
     float H1(0.0);
 
-    for (int i = 0; i < numParticles; i++){
-        for (int j = i; j < numParticles; j++){
+    for (unsigned int i=0; i<numParticles; i++){
+        for (unsigned int j=i; j<numParticles; j++){
             float costh = ( particles[i].Px() * particles[j].Px() + particles[i].Py() * particles[j].Py() + particles[i].Pz() * particles[j].Pz() ) / ( particles[i].P() * particles[j].P() );
             float w1 = particles[i].P();
             float w2 = particles[j].P();
@@ -1140,10 +1145,10 @@ void BESTProducer::pboost( TVector3 pbeam, TVector3 plab, TLorentzVector &pboo )
     pbx.SetX(pbeam.Y());
     pbx.SetY(pbeam.X());
     pbx.SetZ(0.0);
-    pbx /= pbx.Mag();
+    pbx *= 1./pbx.Mag();
 
     pby  = -pbx.Cross(pbeam);
-    pby /= pby.Mag();
+    pby *= 1./pby.Mag();
 
     pboo.SetX((plab.Dot(pbx)));
     pboo.SetY((plab.Dot(pby)));
