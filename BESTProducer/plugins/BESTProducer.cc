@@ -1090,13 +1090,6 @@ float BESTProducer::LegP(float x, int order){
 int BESTProducer::FWMoments( std::vector<TLorentzVector> particles, double (&outputs)[5] ){
     /* Fox-Wolfram Moments */
     unsigned int numParticles = particles.size();
-<<<<<<< HEAD
-=======
-    float s(0.0);
-
-    for(unsigned int i=0; i<numParticles; i++)
-        s += particles[i].E();
->>>>>>> 017331c9ea12526b79700a7af29d9e36f623d698
 
     float s(0.0);
     float H0(0.0);
@@ -1105,12 +1098,7 @@ int BESTProducer::FWMoments( std::vector<TLorentzVector> particles, double (&out
     float H2(0.0);
     float H1(0.0);
 
-<<<<<<< HEAD
-    for (unsigned int i = 0; i < numParticles; i++){
-        s += particles[i].E();
-=======
     for (unsigned int i=0; i<numParticles; i++){
->>>>>>> 017331c9ea12526b79700a7af29d9e36f623d698
         for (unsigned int j=i; j<numParticles; j++){
             float costh = ( particles[i].Px() * particles[j].Px() + particles[i].Py() * particles[j].Py() + particles[i].Pz() * particles[j].Pz() ) / ( particles[i].P() * particles[j].P() );
             float w1 = particles[i].P();
