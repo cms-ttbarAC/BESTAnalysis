@@ -979,7 +979,6 @@ void BESTProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
 
 
-
     iEvent.put( std::move( fw_moments_0), "FWmoment0");
     iEvent.put( std::move( fw_moments_1), "FWmoment1");
     iEvent.put( std::move( fw_moments_2), "FWmoment2");
@@ -1086,19 +1085,17 @@ float BESTProducer::LegP(float x, int order){
 int BESTProducer::FWMoments( std::vector<TLorentzVector> particles, double (&outputs)[5] ){
     /* Fox-Wolfram Moments */
     unsigned int numParticles = particles.size();
+
     float s(0.0);
-
-    for(int i = 0; i < numParticles; i++)
-        s += particles[i].E();
-
     float H0(0.0);
     float H4(0.0);
     float H3(0.0);
     float H2(0.0);
     float H1(0.0);
 
-    for (int i = 0; i < numParticles; i++){
-        for (int j = i; j < numParticles; j++){
+    for (unsigned int i = 0; i < numParticles; i++){
+        s += particles[i].E();
+        for (unsigned int j=i; j<numParticles; j++){
             float costh = ( particles[i].Px() * particles[j].Px() + particles[i].Py() * particles[j].Py() + particles[i].Pz() * particles[j].Pz() ) / ( particles[i].P() * particles[j].P() );
             float w1 = particles[i].P();
             float w2 = particles[j].P();
@@ -1140,10 +1137,10 @@ void BESTProducer::pboost( TVector3 pbeam, TVector3 plab, TLorentzVector &pboo )
     pbx.SetX(pbeam.Y());
     pbx.SetY(pbeam.X());
     pbx.SetZ(0.0);
-    pbx /= pbx.Mag();
+    pbx *= 1./pbx.Mag();
 
     pby  = -pbx.Cross(pbeam);
-    pby /= pby.Mag();
+    pby *= 1./pby.Mag();
 
     pboo.SetX((plab.Dot(pbx)));
     pboo.SetY((plab.Dot(pby)));
